@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for community members
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  firstName       String
+  lastName        String
+  profileImage    String?
+  bio             String?
+  educationLevel  String   // undergraduate, graduate, phd, postdoc, recent_graduate
+  fieldOfStudy    String   // biology, chemistry, biochemistry, biotechnology, pharmacology, medicine
+  careerInterests String   // JSON array of interests
+  experienceLevel String   // beginner, intermediate, advanced
+  careerGoals     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  blogPosts       BlogPost[]
+  mentorSessions  MentorSession[]
+  mentorProfile   MentorProfile?
+  resources       Resource[]
+  comments        Comment[]
+
+  @@map("users")
+}
+
+// Mentor profile for users who want to be mentors
+model MentorProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  title       String
+  company     String
+  bio         String
+  expertise   String   // JSON array of expertise areas
+  experience  String   // Detailed experience description
+  rating      Float    @default(0.0)
+  availability String   // availability status
+  sessions    Int      @default(0)
+  responseTime String  // typical response time
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+  mentorSessions MentorSession[]
+
+  @@map("mentor_profiles")
+}
+
+// Blog posts for community content
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String
+  category    String   // Research, Career, Leadership, etc.
+  tags        String   // JSON array of tags
+  published   Boolean  @default(true)
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User     @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+
+  @@map("blog_posts")
+}
+
+// Comments on blog posts
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author    User     @relation(fields: [authorId], references: [id])
+  post      BlogPost @relation(fields: [postId], references: [id])
+
+  @@map("comments")
+}
+
+// Mentor sessions between mentors and mentees
+model MentorSession {
+  id          String   @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  status      String   // pending, confirmed, completed, cancelled
+  scheduledAt DateTime?
+  completedAt DateTime?
+  notes       String?
+  rating      Int?     // 1-5 rating from mentee
+  feedback    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  mentor      MentorProfile @relation(fields: [mentorId], references: [userId])
+  mentee      User          @relation(fields: [menteeId], references: [id])
+
+  @@map("mentor_sessions")
+}
+
+// Career roadmaps and resources
+model CareerPath {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  description String
+  icon        String   // icon name/identifier
+  salaryRange String
+  jobOutlook  String
+  keySkills   String   // JSON array
+  education   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  resources   Resource[]
+  flowcharts  Flowchart[]
+
+  @@map("career_paths")
+}
+
+// Flowcharts for career progression
+model Flowchart {
+  id          String   @id @default(cuid())
+  careerPathId String
+  stage       String
+  duration    String
+  description String
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  careerPath  CareerPath @relation(fields: [careerPathId], references: [id])
+
+  @@map("flowcharts")
+}
+
+// Resources (PDFs, links, etc.)
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   // pdf, link, video, etc.
+  url         String?
+  fileSize    String?  // for PDFs
+  downloads   Int      @default(0)
+  category    String   // career, mentorship, general
+  tags        String   // JSON array
+  careerPathId String?
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  careerPath  CareerPath? @relation(fields: [careerPathId], references: [id])
+  uploader    User?       @relation(fields: [uploadedBy], references: [id])
+
+  @@map("resources")
+}
+
+// Form submissions for user inquiries
+model FormSubmission {
+  id          String   @id @default(cuid())
+  type        String   // join_community, contact, feedback
+  data        String   // JSON form data
+  status      String   // new, reviewed, responded
+  response    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("form_submissions")
+}
