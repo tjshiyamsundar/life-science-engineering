@@ -107,7 +107,7 @@ export function CareerRoadmapDetails({ career }: CareerRoadmapProps) {
     }
   };
 
-  const currentCareer = roadmapData[career.title as keyof typeof roadmapData] || roadmapData["Research Scientist"];
+  const currentCareer = roadmapData[career.title as keyof typeof roadmapData] || roadmapData["Clinical Research"];
 
   return (
     <div className="space-y-8">
@@ -280,8 +280,8 @@ export function CareerRoadmapDetails({ career }: CareerRoadmapProps) {
 
 export default function Page() {
   const defaultCareer = {
-    title: "Research Scientist",
-    description: "Conduct research to advance scientific knowledge.",
+    title: "Clinical Research",
+    description: "Clinical research professionals conduct studies to test new treatments, drugs, and medical devices.",
     icon: FileText,
     paths: 5,
     resources: 10
