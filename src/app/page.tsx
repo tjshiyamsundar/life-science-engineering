@@ -277,3 +277,15 @@ export function CareerRoadmapDetails({ career }: CareerRoadmapProps) {
     </div>
   );
 }
+
+export default function Page() {
+  const defaultCareer = {
+    title: "Research Scientist",
+    description: "Conduct research to advance scientific knowledge.",
+    icon: FileText,
+    paths: 5,
+    resources: 10
+  };
+
+  return <CareerRoadmapDetails career={defaultCareer} />;
+}
